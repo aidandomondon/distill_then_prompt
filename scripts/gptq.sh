@@ -5,8 +5,8 @@ soft_token_num=100
 for opt in adamw; do
 for lr in 0.001; do
 for steps in 30000; do
-CUDA_VISIBLE_DEVICES=$1 python soft_prompt_learning.py \
-    --model_name_or_path $2 \
+python soft_prompt_learning.py \
+    --model_name_or_path $1 \
     --model ${model} \
     --dataset ${dataset} \
     --eval_every_steps 100 \

@@ -7,7 +7,6 @@ import numpy as np
 import time
 import torch.nn.functional as F
 import os
-import ipdb
 from collections.abc import Mapping
 from transformers import AutoTokenizer, set_seed, default_data_collator
 from datasets import load_dataset
@@ -128,10 +127,7 @@ def evaluate(prompt_model, val_loader, loss_fct, is_llama=True):
         bs ,seqlen = inputs_ids.shape
         total_samples += bs
         labels = prepare_input_and_label(prompt_model, inputs_ids)
-        try:
-            output = prompt_model(inputs_ids)
-        except:
-            import ipdb; ipdb.set_trace()
+        output = prompt_model(inputs_ids)
         shift_logits = output.logits[:, :-1, :]
         loss = loss_fct(shift_logits.reshape(-1, shift_logits.shape[-1]), labels.view(-1))
         neg_log_likelihood = loss.float().reshape(bs, -1).mean(dim=-1) * seqlen
@@ -368,11 +364,9 @@ if __name__ == "__main__":
                             "model": unwrapped_model.soft_prompt.state_dict(),
                             "optimizer": optimizer.optimizer.state_dict() # optimizer is an AcceleratedOptimizer object
                         }, f"{ROOT}/{args.output_dir}/best.pth")
-                    else:
-                        import ipdb; ipdb.set_trace()
-                        torch.save({"model": prompt_model.soft_prompt.state_dict(), 
-                                    "optimizer": optimizer.state_dict(),
-                                    },f"{ROOT}/{args.output_dir}/best.pth")
+                    torch.save({"model": prompt_model.soft_prompt.state_dict(), 
+                                "optimizer": optimizer.state_dict(),
+                                },f"{ROOT}/{args.output_dir}/best.pth")
                     best_val_ppl = val_ppl
                     print(f"best val acc: {best_val_ppl}")
 
