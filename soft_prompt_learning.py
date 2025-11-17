@@ -37,6 +37,7 @@ parser.add_argument("--dataloader_pin_memory", action="store_true")
 parser.add_argument("--seqlen", type=int, default=1024)
 parser.add_argument("--per_device_train_batch_size", type=int, default=4)
 parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
+parser.add_argument("--secrets_path", type=str, required=True)
 
 
 def freeze_model(model):
@@ -185,11 +186,16 @@ if __name__ == "__main__":
         tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
         IS_LLAMA = True
     elif args.model.startswith('meta-llama'):
+        with open(args.secrets_path) as file:
+            token = file.read()
         prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
                                                           soft_prompt_path=None,
                                                           n_tokens=args.soft_token_num,
                                                           initialize_from_vocab=args.init_from_vocab,
-                                                          torch_dtype=torch.bfloat16)
+                                                          torch_dtype=torch.bfloat16,
+                                                          device_map='auto',
+                                                          token=token
+                                                          )
         prompt_model = freeze_model(prompt_model)
         print(prompt_model.soft_prompt)
         tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
