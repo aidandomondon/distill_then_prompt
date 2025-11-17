@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from transformers import AutoTokenizer, set_seed, default_data_collator
 from datasets import load_dataset
 from typing import Any, Union
-from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, llama_loader, TextDataset, BloomPromptTuningLM
+from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, llama_loader, TextDataset
 from datasets import Dataset
 from accelerate import Accelerator
 # from optimum.bettertransformer import BetterTransformer
@@ -35,7 +35,6 @@ parser.add_argument("--optimizer", type=str, default="Adafactor")
 parser.add_argument("--dataloader_num_workers", type=int, default=16)
 parser.add_argument("--dataloader_pin_memory", action="store_true")
 parser.add_argument("--seqlen", type=int, default=1024)
-parser.add_argument("--root", type=str, required=True)
 parser.add_argument("--per_device_train_batch_size", type=int, default=4)
 parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
 
@@ -143,7 +142,7 @@ def evaluate(prompt_model, val_loader, loss_fct, is_llama=True):
 
 if __name__ == "__main__":
     args = parser.parse_args()
-    ROOT = args.root
+    ROOT = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
     content_write = "="*20+"\n"
     content_write += f"dataset {args.dataset}\t"
     content_write += f"model {args.model}\t"
@@ -176,6 +175,16 @@ if __name__ == "__main__":
         tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
         IS_LLAMA = False
     elif args.model.startswith('decapoda-research'):
+        prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
+                                                          soft_prompt_path=None,
+                                                          n_tokens=args.soft_token_num,
+                                                          initialize_from_vocab=args.init_from_vocab,
+                                                          torch_dtype=torch.bfloat16)
+        prompt_model = freeze_model(prompt_model)
+        print(prompt_model.soft_prompt)
+        tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
+        IS_LLAMA = True
+    elif args.model.startswith('meta-llama'):
         prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
                                                           soft_prompt_path=None,
                                                           n_tokens=args.soft_token_num,
