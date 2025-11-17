@@ -1,5 +1,5 @@
 dataset=c4
-model=decapoda-research/llama-7b-hf
+model=meta-llama/Llama-3.1-8B
 soft_token_num=100
 
 for opt in adamw; do
