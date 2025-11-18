@@ -2,11 +2,11 @@ import argparse
 import os
 import ipdb
 from tqdm import tqdm
-from transformers import AutoTokenizer, LlamaForCausalLM, OPTForCausalLM
+from transformers import AutoTokenizer, LlamaForCausalLM
 from datasets import load_dataset 
 import torch
 import torch.nn as nn
-from prompt import LLamaPromptTuningLM, llama_loader, OPTPromptTuningLM
+from prompt import LLamaPromptTuningLM, llama_loader
 from prompt.modelutils import get_llama
 
 

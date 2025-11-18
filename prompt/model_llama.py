@@ -1,11 +1,11 @@
 import os
 from pathlib import Path
 
-from transformers import OPTForCausalLM, LlamaForCausalLM
+from transformers import LlamaForCausalLM
 
 import torch
 import torch.nn as nn
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional
 
 
 class LLamaPromptTuningMixin:
@@ -43,40 +43,6 @@ class LLamaPromptTuningMixin:
             use_cache=use_cache,
             return_dict=return_dict,
         )
-
-    # def forward_with_soft_prompt(
-    #     self,
-    #     input_ids: torch.LongTensor = None,
-    #     attention_mask: Optional[torch.Tensor] = None,
-    #     position_ids: Optional[torch.LongTensor] = None,
-    #     past_key_values: Optional[List[torch.FloatTensor]] = None,
-    #     inputs_embeds: Optional[torch.FloatTensor] = None,
-    #     labels: Optional[torch.LongTensor] = None,
-    #     use_cache: Optional[bool] = None,
-    #     output_attentions: Optional[bool] = None,
-    #     output_hidden_states: Optional[bool] = None,
-    #     return_dict: Optional[bool] = None,
-    # ):
-    #     if input_ids is not None:
-    #         inputs_embeds = self._cat_learned_embedding_to_input(input_ids).to(
-    #             self.device
-    #         )
-
-    #     if labels is not None:
-    #         labels = self._extend_labels(labels).to(self.device)
-
-    #     if attention_mask is not None:
-    #         attention_mask = self._extend_attention_mask(attention_mask).to(self.device)
-
-    #     # Drop most of the args for now
-    #     return super().forward(
-    #         attention_mask=attention_mask,
-    #         position_ids=position_ids,
-    #         inputs_embeds=inputs_embeds,
-    #         labels=labels,
-    #         use_cache=use_cache,
-    #         return_dict=return_dict,
-    #     )
     
     
     @classmethod
@@ -185,44 +151,11 @@ class LLamaPromptTuningMixin:
     def save_soft_prompt(self, path: str, filename: str = "soft_prompt.model"):
         Path(path).mkdir(parents=True, exist_ok=True)
         torch.save(self.soft_prompt, os.path.join(path, filename))
-        # print(f"Saved soft prompt: {os.path.join(path, filename)}")
 
 
     def save_model(self, path: str):
         self.model.save_pretrained(path)
 
-        # input_ids: torch.LongTensor = None,
-        # attention_mask: Optional[torch.Tensor] = None,
-        # position_ids: Optional[torch.LongTensor] = None,
-        # past_key_values: Optional[List[torch.FloatTensor]] = None,
-        # inputs_embeds: Optional[torch.FloatTensor] = None,
-        # labels: Optional[torch.LongTensor] = None,
-        # use_cache: Optional[bool] = None,
-        # output_attentions: Optional[bool] = None,
-        # output_hidden_states: Optional[bool] = None,
-        # return_dict: Optional[bool] = None,
-
-# def shift_logits_and_labels(logits,
-#                             loss_ids,
-#                             reference_ids):
-
-#     r"""
-#     Left shift the label, and make label of the positions that are
-#     not loss position to -100, which is the ignore index in pytorch's
-#     loss function.
-#     Args:
-#         logits (:obj:`torch.Tensor`):
-#         batch (:obj:`InputFeatures`): The input features of batchified data sequences.
-#     Returns:
-#         shift_logits (:obj:`torch.Tensor`):
-#         shift_input_ids (:obj:`List[int]`):
-#     """
-
-#     shift_logits = logits[..., :-1, :].contiguous()
-#     shift_loss_ids = loss_ids[..., 1:].contiguous()
-#     shift_input_ids = reference_ids[..., 1:].contiguous()
-#     # shift_input_ids = torch.where(shift_loss_ids>0, shift_input_ids, -100)
-#     return shift_logits, shift_input_ids
 
 class LLamaPromptTuningLM(LLamaPromptTuningMixin, LlamaForCausalLM):
     def __init__(self, config):

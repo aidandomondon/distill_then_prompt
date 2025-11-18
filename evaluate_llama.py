@@ -1,7 +1,7 @@
 import argparse
 import os
 import ipdb
-from transformers import AutoTokenizer, LlamaForCausalLM, OPTForCausalLM
+from transformers import AutoTokenizer, LlamaForCausalLM
 from datasets import load_dataset 
 import torch
 import torch.nn as nn
@@ -69,20 +69,12 @@ elif args.dtype == 'float16':
 else:
     raise NotImplementedError
 
-if 'llama' in args.model:
-    if args.ckpt is None:
-        model = get_llama(args.model_name_or_path)
-    else:
-        model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path, torch_dtype=dtype, n_tokens=args.ntoken)
-    tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
 
-
-elif 'opt' in args.model:
-    if args.ckpt is None:
-        model = OPTForCausalLM.from_pretrained(args.model_name_or_path)
-    else:
-        model = OPTPromptTuningLM.from_pretrained(args.model_name_or_path, torch_dtype=dtype, n_tokens=args.ntoken)
-    tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
+if args.ckpt is None:
+    model = get_llama(args.model_name_or_path)
+else:
+    model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path, torch_dtype=dtype, n_tokens=args.ntoken)
+tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
 
 
 print(model.dtype)

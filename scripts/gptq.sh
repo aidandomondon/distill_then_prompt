@@ -1,12 +1,13 @@
 dataset=c4
-model=meta-llama/Llama-3.1-8B
+model_name_or_path=MiniLLM/MiniLLM-Llama-7B
+model=MiniLLM/MiniLLM-Llama-7B
 soft_token_num=100
 
 for opt in adamw; do
 for lr in 0.001; do
 for steps in 30000; do
 python soft_prompt_learning.py \
-    --model_name_or_path $1 \
+    --model_name_or_path ${model_name_or_path} \
     --model ${model} \
     --dataset ${dataset} \
     --eval_every_steps 100 \

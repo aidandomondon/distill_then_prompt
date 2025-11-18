@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from transformers import AutoTokenizer, set_seed, default_data_collator
 from datasets import load_dataset
 from typing import Any, Union
-from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, llama_loader, TextDataset
+from prompt import LLamaPromptTuningLM, llama_loader, TextDataset
 from datasets import Dataset
 from accelerate import Accelerator
 # from optimum.bettertransformer import BetterTransformer
@@ -93,29 +93,6 @@ def prepare_input_and_label(model, inputs_ids):
     return labels
 
 
-# @torch.no_grad()
-# def evaluate(prompt_model, valenc, loss_fct):
-#     prompt_model.eval()
-#     nlls = []
-#     seqlen = args.seqlen
-#     n_samples = valenc.input_ids.size(1) // seqlen
-#     for i in range(n_samples):
-#         inputs_ids = valenc.input_ids[:,i * seqlen:(i+1) * seqlen].cuda()
-#         labels = prepare_input_and_label(prompt_model, inputs_ids)
-#         try:
-#             output = prompt_model(inputs_ids)
-#         except:
-#             import ipdb; ipdb.set_trace()
-#         shift_logits = output.logits[:, :-1, :]
-#         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), labels.view(-1))
-#         neg_log_likelihood = loss.float().mean() * seqlen
-#         nlls.append(neg_log_likelihood)
-#     ppl = torch.exp(torch.stack(nlls).sum() / (n_samples * seqlen))
-#     print(f"Perplexity: {ppl.item():3f}")
-#     import ipdb; ipdb.set_trace()
-#     return ppl.item()
-
-
 @torch.no_grad()
 def evaluate(prompt_model, val_loader, loss_fct, is_llama=True):
     prompt_model.eval()
@@ -165,53 +142,20 @@ if __name__ == "__main__":
     except FileExistsError:
         pass
     # load model
-    if args.model.startswith('facebook/opt'):
-        prompt_model = OPTPromptTuningLM.from_pretrained(args.model_name_or_path,
-                                                          soft_prompt_path=None,
-                                                          n_tokens=args.soft_token_num,
-                                                          initialize_from_vocab=args.init_from_vocab,
-                                                          torch_dtype=torch.bfloat16)
-        prompt_model = freeze_model(prompt_model)
-        print(prompt_model.soft_prompt)
-        tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
-        IS_LLAMA = False
-    elif args.model.startswith('decapoda-research'):
-        prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
-                                                          soft_prompt_path=None,
-                                                          n_tokens=args.soft_token_num,
-                                                          initialize_from_vocab=args.init_from_vocab,
-                                                          torch_dtype=torch.bfloat16)
-        prompt_model = freeze_model(prompt_model)
-        print(prompt_model.soft_prompt)
-        tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
-        IS_LLAMA = True
-    elif args.model.startswith('meta-llama'):
-        with open(args.secrets_path) as file:
-            token = file.read()
-        prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
-                                                          soft_prompt_path=None,
-                                                          n_tokens=args.soft_token_num,
-                                                          initialize_from_vocab=args.init_from_vocab,
-                                                          torch_dtype=torch.bfloat16,
-                                                          device_map='auto',
-                                                          token=token
-                                                          )
-        prompt_model = freeze_model(prompt_model)
-        print(prompt_model.soft_prompt)
-        tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
-        IS_LLAMA = True
-    elif args.model.startswith('bigscience/bloom-7b1'):
-        prompt_model = BloomPromptTuningLM.from_pretrained(args.model_name_or_path,
-                                                          soft_prompt_path=None,
-                                                          n_tokens=args.soft_token_num,
-                                                          initialize_from_vocab=args.init_from_vocab,
-                                                          torch_dtype=torch.bfloat16)
-        prompt_model = freeze_model(prompt_model)
-        print(prompt_model.soft_prompt)
-        IS_LLAMA = False
-        tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
-    else:
-        raise NotImplementedError("currently only support OPT")
+    with open(args.secrets_path) as file:
+        token = file.read()
+    prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
+                                                        soft_prompt_path=None,
+                                                        n_tokens=args.soft_token_num,
+                                                        initialize_from_vocab=args.init_from_vocab,
+                                                        torch_dtype=torch.bfloat16,
+                                                        device_map='auto',
+                                                        token=token
+                                                        )
+    prompt_model = freeze_model(prompt_model)
+    print(prompt_model.soft_prompt)
+    tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
+    IS_LLAMA = True
 
     # load dataset
     from torch.utils.data import DataLoader
