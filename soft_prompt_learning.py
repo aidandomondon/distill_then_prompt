@@ -176,17 +176,6 @@ if __name__ == "__main__":
         raw_val_data = load_dataset('ptb_text_only', 'penn_treebank', split='validation')
         raw_tst_data = load_dataset('ptb_text_only', 'penn_treebank', split='test')
 
-        # trainenc = tokenizer(" ".join(raw_tra_data['sentence']), return_tensors='pt')
-        # truncate the train sequence
-        # tot_num_train_seq = trainenc['input_ids'].size(1) // (args.seqlen*args.per_device_train_batch_size)
-        # trainenc['input_ids'] = trainenc['input_ids'][..., :tot_num_train_seq*args.seqlen*args.per_device_train_batch_size]
-
-        # truncate the val sequence
-        # valenc = tokenizer("\n\n".join(raw_val_data['sentence']), return_tensors='pt')
-        # tot_num_val_seq = valenc['input_ids'].size(1) // args.seqlen
-        # valenc['input_ids'] = valenc['input_ids'][..., :tot_num_val_seq*args.seqlen]
-
-
         train_dataset = TextDataset(raw_tra_data, tokenizer, args, mode="train", col_key='sentence')
         val_dataset = TextDataset(raw_val_data, tokenizer, args, mode="val", col_key='sentence')
 
@@ -200,18 +189,6 @@ if __name__ == "__main__":
         raw_val_data = load_dataset('allenai/c4', 'allenai--c4', 
                                     data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, 
                                     split='validation')
-
-        # trainenc = tokenizer(" ".join(raw_tra_data['text']), return_tensors='pt')
-        # # truncate the train sequence
-        # tot_num_train_seq = trainenc['input_ids'].size(1) // (args.seqlen*args.per_device_train_batch_size)
-        # trainenc['input_ids'] = trainenc['input_ids'][..., :tot_num_train_seq*args.seqlen*args.per_device_train_batch_size]
-
-        # # truncate the val sequence
-        # valenc = tokenizer(' '.join(raw_val_data[:1100]['text']), return_tensors='pt')
-        # tot_num_val_seq = valenc['input_ids'].size(1) // args.seqlen
-        # valenc['input_ids'] = valenc['input_ids'][..., :tot_num_val_seq*args.seqlen]
-        # print('dataset prepare finished')
-
         train_dataset = TextDataset(raw_tra_data, tokenizer, args, mode="train", col_key='text', cutoff=5000)
         val_dataset = TextDataset(raw_val_data, tokenizer, args, mode="val", col_key='text', cutoff=1100)
         train_dataloader = DataLoader(train_dataset, batch_size=args.per_device_train_batch_size, shuffle=True, drop_last=True)
@@ -340,57 +317,3 @@ if __name__ == "__main__":
 
         if leave_training:
             break
-
-    # n_batchs = trainenc['input_ids'].size(1) // (args.seqlen * args.per_device_train_batch_size)
-    # for epoch in range(1000000): # 1000000
-    #     print(f"Begin epoch {epoch}")
-    #     prompt_model.train()
-    #     for i in range(n_batchs):
-    #         input_ids = trainenc.input_ids[:, i*args.seqlen*args.per_device_train_batch_size:(i+1)*args.seqlen*args.per_device_train_batch_size].cuda()
-    #         input_ids = input_ids.reshape(args.per_device_train_batch_size, args.seqlen)
-    #         # shuffle the input
-    #         input_ids = input_ids[torch.randperm(input_ids.shape[0])]
-    #         output = prompt_model(input_ids)
-    #         logits = output.logits
-    #         loss = loss_func(logits, input_ids, prompt_model, loss_fct)
-    #         loss.backward()
-    #         tot_loss += loss.item()
-    #         actual_step += 1
-            
-    #         # clip gradient
-    #         torch.nn.utils.clip_grad_norm_(prompt_model.parameters(), 1.0)
-    #         glb_step += 1
-
-    #         # set progress bar
-    #         if glb_step % pbar_update_freq == 0:
-    #             aveloss = (tot_loss - log_loss) / pbar_update_freq
-    #             pbar.update(10)
-    #             pbar.set_postfix({'loss': aveloss})
-    #             log_loss = tot_loss
-            
-    #         # update
-    #         optimizer.step()
-    #         optimizer.zero_grad()
-    #         scheduler.step()
-
-
-    #         tot_train_time += time.time()
-
-    #         if glb_step >0 and glb_step % args.eval_every_steps == 0:
-    #             # TODO eval 
-    #             val_ppl = evaluate(prompt_model, valenc, loss_fct)
-    #             print(f'{val_ppl}: val_ppl')
-    #             if val_ppl <= best_val_ppl:
-    #                 torch.save(prompt_model.state_dict(),f"{ROOT}/{args.output_dir}/best.ckpt")
-    #                 best_val_ppl = val_ppl
-    #                 print(f"best val acc: {best_val_ppl}")
-
-    #             acc_traces.append(val_ppl)
-    #             print("Glb_step {}, val_ppl {}, average time {}".format(glb_step, val_ppl, tot_train_time/actual_step ), flush=True)
-    #             prompt_model.train()
-    #         if glb_step > args.max_steps:
-    #             leave_training = True
-    #             break
-
-    #     if leave_training:
-    #         break
