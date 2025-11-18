@@ -38,6 +38,7 @@ parser.add_argument("--seqlen", type=int, default=1024)
 parser.add_argument("--per_device_train_batch_size", type=int, default=4)
 parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
 parser.add_argument("--secrets_path", type=str, required=True)
+parser.add_argument("--num_epochs", type=str, default=1000000)
 
 
 def freeze_model(model):
@@ -132,6 +133,7 @@ if __name__ == "__main__":
     content_write += f"seqlen {args.seqlen}\t"
     content_write += f"warmup_step_prompt {args.warmup_step_prompt}\t"
     content_write += f"soft_token_num {args.soft_token_num}\t"
+    content_write += f"num_epochs {args.num_epochs}"
     content_write += "\n"
 
     print(content_write)
@@ -277,7 +279,7 @@ if __name__ == "__main__":
     # val_ppl = evaluate(prompt_model, val_dataloader, loss_fct)
     # print(f'before training, eval ppl: {val_ppl}')
 
-    for epoch in range(1000000): # 1000000
+    for epoch in range(args.num_epochs):
         print(f"Begin epoch {epoch}")
         prompt_model.train()
         for step, batch in enumerate(train_dataloader):
