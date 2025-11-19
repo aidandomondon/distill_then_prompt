@@ -1,4 +1,4 @@
-dataset=c4
+dataset=c4  # Learning on C4 because Xu et al., 2024 says it yields the most transferrable prompts
 model_name_or_path=MiniLLM/MiniLLM-Llama-7B
 model=MiniLLM/MiniLLM-Llama-7B
 soft_token_num=100
