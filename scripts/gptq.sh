@@ -17,8 +17,9 @@ python soft_prompt_learning.py \
     --max_steps ${steps} \
     --optimizer ${opt} \
     --output_dir ./gptq/${opt}_lr${lr}_steps${steps}_token${soft_token_num}/${dataset} \
-    --per_device_train_batch_size 2 2>&1 | tee ./logs/log_gptq_${opt}_lr${lr}_${dataset}_steps${steps}_token${soft_token_num}.txt \
-    --secrets_path ./hugging_face_access_token.txt
+    --per_device_train_batch_size 2 \
+    --secrets_path ./hugging_face_access_token.txt \
+    2>&1 | tee ./logs/log_gptq_${opt}_lr${lr}_${dataset}_steps${steps}_token${soft_token_num}.txt  
 done 
 done
 done
