@@ -9,7 +9,8 @@ import torch.nn.functional as F
 import os
 import ipdb
 from collections.abc import Mapping
-from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, llama_loader, TextDataset
+from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, TextDataset
+from transformers.models import llama as llama_loader
 from transformers import AutoTokenizer, set_seed, default_data_collator, AutoModelForCausalLM
 
 from datasets import load_dataset

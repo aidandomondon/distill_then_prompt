@@ -6,7 +6,7 @@ import torch.nn as nn
 from gptq import *
 from prompt.modelutils import get_llama, find_layers, DEV
 from quant import *
-from prompt import llama_loader
+from transformers.models import llama as llama_loader
 from transformers import LlamaForCausalLM
 
 

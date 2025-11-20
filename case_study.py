@@ -6,7 +6,8 @@ from transformers import AutoTokenizer, LlamaForCausalLM
 from datasets import load_dataset 
 import torch
 import torch.nn as nn
-from prompt import LLamaPromptTuningLM, llama_loader
+from prompt import LLamaPromptTuningLM
+from transformers.models import llama as llama_loader
 from prompt.modelutils import get_llama
 
 

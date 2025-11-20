@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from prompt import llama_loader
+from transformers.models import llama as llama_loader
 from torch.utils.data import Dataset
 
 

@@ -1,4 +1,4 @@
-import llama_loader
+from transformers.models import llama as llama_loader
 import ipdb
 tokenizer = llama_loader.LLaMATokenizer.from_pretrained('decapoda-research/llama-7b-hf')
 model = llama_loader.LLaMAForCausalLM.from_pretrained('decapoda-research/llama-7b-hf')
