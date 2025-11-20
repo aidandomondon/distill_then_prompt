@@ -148,8 +148,7 @@ if __name__ == "__main__":
                                                         n_tokens=args.soft_token_num,
                                                         initialize_from_vocab=args.init_from_vocab,
                                                         torch_dtype=torch.bfloat16,
-                                                        device_map='auto',
-                                                        token=token
+                                                        device_map='auto'
                                                         )
     prompt_model = freeze_model(prompt_model)
     print(prompt_model.soft_prompt)
