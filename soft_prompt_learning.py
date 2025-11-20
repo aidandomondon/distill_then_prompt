@@ -180,10 +180,10 @@ if __name__ == "__main__":
         val_dataloader = DataLoader(val_dataset, batch_size=args.per_device_eval_batch_size, shuffle=False)
 
     elif args.dataset == 'c4':
-        raw_tra_data = load_dataset('allenai/c4', 'allenai--c4', 
+        raw_tra_data = load_dataset('allenai/c4', 'en', 
                                     data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, 
                                     split='train')
-        raw_val_data = load_dataset('allenai/c4', 'allenai--c4', 
+        raw_val_data = load_dataset('allenai/c4', 'en', 
                                     data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, 
                                     split='validation')
         train_dataset = TextDataset(raw_tra_data, tokenizer, args, mode="train", col_key='text', cutoff=5000)
