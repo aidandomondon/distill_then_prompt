@@ -5,3 +5,4 @@ ipdb
 transformers
 datasets
 accelerate
+sentencepiece
