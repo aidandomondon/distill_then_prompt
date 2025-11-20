@@ -11,7 +11,8 @@ from collections.abc import Mapping
 from transformers import AutoTokenizer, set_seed, default_data_collator
 from datasets import load_dataset
 from typing import Any, Union
-from prompt import LLamaPromptTuningLM, llama_loader, TextDataset
+from prompt import LLamaPromptTuningLM, TextDataset
+from transformers.models import llama as llama_loader
 from datasets import Dataset
 from accelerate import Accelerator
 # from optimum.bettertransformer import BetterTransformer
@@ -152,7 +153,7 @@ if __name__ == "__main__":
                                                         )
     prompt_model = freeze_model(prompt_model)
     print(prompt_model.soft_prompt)
-    tokenizer = llama_loader.LLaMATokenizer.from_pretrained(args.model, use_fast=False)
+    tokenizer = llama_loader.LlamaTokenizer.from_pretrained(args.model, use_fast=False)
     IS_LLAMA = True
 
     # load dataset
