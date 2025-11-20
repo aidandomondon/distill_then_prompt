@@ -3,6 +3,6 @@ torch
 numpy
 ipdb
 transformers
-datasets
+datasets>=4.4.1
 accelerate
 sentencepiece
