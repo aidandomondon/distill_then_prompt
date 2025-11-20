@@ -37,7 +37,6 @@ parser.add_argument("--dataloader_pin_memory", action="store_true")
 parser.add_argument("--seqlen", type=int, default=1024)
 parser.add_argument("--per_device_train_batch_size", type=int, default=4)
 parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
-parser.add_argument("--secrets_path", type=str, required=True)
 parser.add_argument("--num_epochs", type=str, default=1000000)
 
 
@@ -144,8 +143,6 @@ if __name__ == "__main__":
     except FileExistsError:
         pass
     # load model
-    with open(args.secrets_path) as file:
-        token = file.read()
     prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
                                                         soft_prompt_path=None,
                                                         n_tokens=args.soft_token_num,
