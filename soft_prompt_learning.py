@@ -195,8 +195,8 @@ if __name__ == "__main__":
         raise NotImplementedError("currently only support wikitext2 and rtb dataset")
     
     # build optimizer and lr scheduler
-    from torch.optim import AdamW
-    from transformers import  AdamW, get_linear_schedule_with_warmup,get_constant_schedule_with_warmup  # use AdamW is a standard practice for transformer
+    from torch.optim import AdamW # use AdamW is a standard practice for transformer
+    from transformers import get_linear_schedule_with_warmup,get_constant_schedule_with_warmup  
     from transformers.optimization import Adafactor, AdafactorSchedule  # use Adafactor is the default setting for T5
     tot_step = args.max_steps
     optimizer_grouped_parameters = [
