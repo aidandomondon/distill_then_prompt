@@ -159,8 +159,8 @@ if __name__ == "__main__":
     # load dataset
     from torch.utils.data import DataLoader
     if args.dataset == "wikitext2":
-        raw_tra_data = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train')
-        raw_val_data = load_dataset('wikitext', 'wikitext-2-raw-v1', split='validation')
+        raw_tra_data = load_dataset('wikitext', 'wikitext-2-raw-v1', split='train', streaming=True)
+        raw_val_data = load_dataset('wikitext', 'wikitext-2-raw-v1', split='validation', streaming=True)
         # raw_tst_data = load_dataset('wikitext', 'wikitext-2-raw-v1', split='test')
         train_dataset = TextDataset(raw_tra_data, tokenizer, args, mode="train", col_key='text')
         val_dataset = TextDataset(raw_val_data, tokenizer, args, mode="val", col_key='text')
