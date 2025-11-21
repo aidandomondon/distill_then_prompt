@@ -3,7 +3,7 @@ model_name_or_path=MiniLLM/MiniLLM-Llama-7B
 model=MiniLLM/MiniLLM-Llama-7B
 per_device_train_batch_size=1
 per_device_eval_batch_size=1
-soft_token_num=100
+soft_token_num=50
 
 for opt in adamw; do
 for lr in 0.001; do
