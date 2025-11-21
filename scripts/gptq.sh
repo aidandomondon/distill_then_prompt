@@ -1,6 +1,8 @@
 dataset=c4  # Learning on C4 because Xu et al., 2024 says it yields the most transferrable prompts
 model_name_or_path=MiniLLM/MiniLLM-Llama-7B
 model=MiniLLM/MiniLLM-Llama-7B
+per_device_train_batch_size=1
+per_device_eval_batch_size=1
 soft_token_num=100
 
 for opt in adamw; do
@@ -17,7 +19,8 @@ python soft_prompt_learning.py \
     --max_steps ${steps} \
     --optimizer ${opt} \
     --output_dir ./gptq/${opt}_lr${lr}_steps${steps}_token${soft_token_num}/${dataset} \
-    --per_device_train_batch_size 2 \
+    --per_device_train_batch_size ${per_device_train_batch_size} \
+    --per_device_eval_batch_size ${per_device_eval_batch_size}
     2>&1 | tee ./logs/log_gptq_${opt}_lr${lr}_${dataset}_steps${steps}_token${soft_token_num}.txt  
 done 
 done
