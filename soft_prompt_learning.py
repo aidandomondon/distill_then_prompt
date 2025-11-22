@@ -144,7 +144,7 @@ if __name__ == "__main__":
     except FileExistsError:
         pass
     # load model
-    if args.model.toLowerCase().includes('opt'):
+    if args.model.lower().find('opt') != -1:
         prompt_model = OPTPromptTuningLM.from_pretrained(args.model_name_or_path,
                                                           soft_prompt_path=None,
                                                           n_tokens=args.soft_token_num,
@@ -154,7 +154,7 @@ if __name__ == "__main__":
         print(prompt_model.soft_prompt)
         tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
         IS_LLAMA = False
-    elif args.model.toLowerCase().includes('llama'):
+    elif args.model.lower().find('llama') != -1:
         prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
                                                           soft_prompt_path=None,
                                                           n_tokens=args.soft_token_num,
