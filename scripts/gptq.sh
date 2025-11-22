@@ -1,6 +1,6 @@
 dataset=c4  # Learning on C4 because Xu et al., 2024 says it yields the most transferrable prompts
-model_name_or_path=MiniLLM/MiniLLM-Llama-7B
-model=MiniLLM/MiniLLM-Llama-7B
+model_name_or_path=MiniLLM/MiniLLM-OPT-1.3B #MiniLLM/MiniLLM-Llama-7B
+model=MiniLLM/MiniLLM-OPT-1.3B #MiniLLM/MiniLLM-Llama-7B
 per_device_train_batch_size=1
 per_device_eval_batch_size=1
 soft_token_num=25

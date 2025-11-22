@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from transformers import AutoTokenizer, set_seed, default_data_collator
 from datasets import load_dataset
 from typing import Any, Union
-from prompt import LLamaPromptTuningLM, TextDataset
+from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, TextDataset
 from transformers.models import llama as llama_loader
 from datasets import Dataset
 from accelerate import Accelerator
@@ -144,17 +144,30 @@ if __name__ == "__main__":
     except FileExistsError:
         pass
     # load model
-    prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
-                                                        soft_prompt_path=None,
-                                                        n_tokens=args.soft_token_num,
-                                                        initialize_from_vocab=args.init_from_vocab,
-                                                        torch_dtype=torch.bfloat16,
-                                                        device_map='auto'
-                                                        )
-    prompt_model = freeze_model(prompt_model)
-    print(prompt_model.soft_prompt)
-    tokenizer = llama_loader.LlamaTokenizer.from_pretrained(args.model, use_fast=False)
-    IS_LLAMA = True
+    if args.model.toLowerCase().includes('opt'):
+        prompt_model = OPTPromptTuningLM.from_pretrained(args.model_name_or_path,
+                                                          soft_prompt_path=None,
+                                                          n_tokens=args.soft_token_num,
+                                                          initialize_from_vocab=args.init_from_vocab,
+                                                          torch_dtype=torch.bfloat16)
+        prompt_model = freeze_model(prompt_model)
+        print(prompt_model.soft_prompt)
+        tokenizer = AutoTokenizer.from_pretrained(args.model, use_fast=False)
+        IS_LLAMA = False
+    elif args.model.toLowerCase().includes('llama'):
+        prompt_model = LLamaPromptTuningLM.from_pretrained(args.model_name_or_path,
+                                                          soft_prompt_path=None,
+                                                          n_tokens=args.soft_token_num,
+                                                          initialize_from_vocab=args.init_from_vocab,
+                                                          torch_dtype=torch.bfloat16,
+                                                          device_map='auto'
+                                                          )
+        prompt_model = freeze_model(prompt_model)
+        print(prompt_model.soft_prompt)
+        tokenizer = llama_loader.LlamaTokenizer.from_pretrained(args.model, use_fast=False)
+        IS_LLAMA = True
+    else:
+        raise NotImplementedError("currently only support OPT")
 
     # load dataset
     from torch.utils.data import DataLoader
