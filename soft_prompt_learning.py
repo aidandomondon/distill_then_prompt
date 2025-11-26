@@ -8,10 +8,10 @@ import time
 import torch.nn.functional as F
 import os
 from collections.abc import Mapping
-from transformers import AutoTokenizer, set_seed, default_data_collator
+from transformers import AutoTokenizer, set_seed, default_data_collator, GPT2Tokenizer
 from datasets import load_dataset
 from typing import Any, Union
-from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, TextDataset
+from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, TextDataset, GPTPromptTuningLM
 from transformers.models import llama as llama_loader
 from datasets import Dataset
 from accelerate import Accelerator
@@ -166,6 +166,18 @@ if __name__ == "__main__":
         print(prompt_model.soft_prompt)
         tokenizer = llama_loader.LlamaTokenizer.from_pretrained(args.model, use_fast=False)
         IS_LLAMA = True
+    elif args.model.lower().find('gpt') != -1:
+        prompt_model = GPTPromptTuningLM.from_pretrained(args.model_name_or_path,
+                                                          soft_prompt_path=None,
+                                                          n_tokens=args.soft_token_num,
+                                                          initialize_from_vocab=args.init_from_vocab,
+                                                          torch_dtype=torch.bfloat16,
+                                                          device_map='auto'
+                                                          )
+        prompt_model = freeze_model(prompt_model)
+        print(prompt_model.soft_prompt)
+        tokenizer = GPT2Tokenizer.from_pretrained(args.model, use_fast=False)
+        IS_LLAMA = False
     else:
         raise NotImplementedError("currently only support OPT")
 
