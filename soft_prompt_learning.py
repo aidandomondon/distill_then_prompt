@@ -10,7 +10,6 @@ from datasets import load_dataset
 from typing import Any, Union
 from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, TextDataset, GPTPromptTuningLM
 from transformers.models import llama as llama_loader
-from accelerate import Accelerator
 
 
 parser = argparse.ArgumentParser("")
@@ -97,6 +96,7 @@ def evaluate(prompt_model, val_loader, loss_fct, is_llama=True):
     nlls = []
     total_samples = 0
     for idx, inputs_ids in tqdm(enumerate(val_loader)):
+        inputs_ids = inputs_ids.to(torch.accelerator.current_accelerator())
         bs ,seqlen = inputs_ids.shape
         total_samples += bs
         labels = prepare_input_and_label(prompt_model, inputs_ids)
@@ -104,7 +104,7 @@ def evaluate(prompt_model, val_loader, loss_fct, is_llama=True):
         shift_logits = output.logits[:, :-1, :]
         loss = loss_fct(shift_logits.reshape(-1, shift_logits.shape[-1]), labels.view(-1))
         neg_log_likelihood = loss.float().reshape(bs, -1).mean(dim=-1) * seqlen
-        nll = accelerator.gather(neg_log_likelihood.view(1, -1))
+        nll = neg_log_likelihood.view(1, -1)
         nlls.append(nll)
     nlls = torch.hstack(nlls).view(-1)
     ppl = torch.exp(nlls.sum() / (nlls.numel() * seqlen))
@@ -272,11 +272,7 @@ if __name__ == "__main__":
 
     pbar = tqdm(total=tot_step, desc="Train")
     loss_fct = torch.nn.CrossEntropyLoss(reduction='none')
-    accelerator = Accelerator()
-    prompt_model, optimizer, train_dataloader, scheduler = accelerator.prepare(
-        prompt_model, optimizer, train_dataloader, scheduler)
-    device = accelerator.device
-    val_dataloader = accelerator.prepare(val_dataloader)
+    prompt_model = prompt_model.to(torch.accelerator.current_accelerator())
     # prompt_model = BetterTransformer.transform(model)
 
     # val_ppl = evaluate(prompt_model, val_dataloader, loss_fct)
@@ -286,11 +282,11 @@ if __name__ == "__main__":
         print(f"Begin epoch {epoch}")
         prompt_model.train()
         for step, batch in enumerate(train_dataloader):
-            input_ids = batch
+            input_ids = batch.to(torch.accelerator.current_accelerator())
             output = prompt_model(input_ids)
             logits = output.logits
             loss = loss_func(logits, input_ids, prompt_model, loss_fct)
-            accelerator.backward(loss)
+            loss.backward()
             tot_loss += loss.item()
             actual_step += 1
             
@@ -316,12 +312,6 @@ if __name__ == "__main__":
                 val_ppl = evaluate(prompt_model, val_dataloader, loss_fct, IS_LLAMA)
                 print(f'{val_ppl}: val_ppl')
                 if val_ppl <= best_val_ppl:
-                    if isinstance(prompt_model, torch.nn.parallel.DistributedDataParallel):
-                        unwrapped_model = accelerator.unwrap_model(prompt_model)
-                        accelerator.save({
-                            "model": unwrapped_model.soft_prompt.state_dict(),
-                            "optimizer": optimizer.optimizer.state_dict() # optimizer is an AcceleratedOptimizer object
-                        }, f"{ROOT}/{args.output_dir}/best.pth")
                     torch.save({"model": prompt_model.soft_prompt.state_dict(), 
                                 "optimizer": optimizer.state_dict(),
                                 },f"{ROOT}/{args.output_dir}/best.pth")

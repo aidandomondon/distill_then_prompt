@@ -91,7 +91,7 @@ class GPTPromptTuningMixin:
         n_batches = labels.shape[0]
         return torch.cat(
             [
-                torch.full((n_batches, self.n_tokens), ignore_index, device=labels.device),
+                torch.full((n_batches, self.n_tokens), ignore_index).to(self.device),
                 labels,
             ],
             dim=1,
@@ -105,7 +105,7 @@ class GPTPromptTuningMixin:
 
         n_batches = attention_mask.shape[0]
         return torch.cat(
-            [torch.full((n_batches, self.n_tokens), 1), attention_mask],
+            [torch.full((n_batches, self.n_tokens), 1).to(self.device), attention_mask],
             dim=1,
         )
 
@@ -138,13 +138,15 @@ class GPTPromptTuningMixin:
         return_dict=None,
     ):
         if input_ids is not None:
-            inputs_embeds = self._cat_learned_embedding_to_input(input_ids)
+            inputs_embeds = self._cat_learned_embedding_to_input(input_ids).to(
+                self.device
+            )
 
         if labels is not None:
-            labels = self._extend_labels(labels)
+            labels = self._extend_labels(labels).to(self.device)
 
         if attention_mask is not None:
-            attention_mask = self._extend_attention_mask(attention_mask)
+            attention_mask = self._extend_attention_mask(attention_mask).to(self.device)
 
         # Drop most of the args for now
         return super().forward(
