@@ -27,7 +27,6 @@ class GPTPromptTuningMixin:
             model.set_soft_prompt_embeds(soft_prompt_path)
         elif n_tokens is not None:
             print("Initializing soft prompt...")
-            print(model)
             model.initialize_soft_prompt(
                 n_tokens=n_tokens,
                 initialize_from_vocab=initialize_from_vocab,
@@ -47,7 +46,7 @@ class GPTPromptTuningMixin:
 
         """
         self.soft_prompt = torch.load(
-            soft_prompt_path, map_location=torch.device("cpu")
+            soft_prompt_path
         )
         self.n_tokens = self.soft_prompt.num_embeddings
         print(f"Set soft prompt! (n_tokens: {self.n_tokens})")
@@ -61,18 +60,18 @@ class GPTPromptTuningMixin:
     ) -> None:
         self.n_tokens = n_tokens
         if initialize_from_vocab:
-            init_prompt_value = self.model.decoder.embed_tokens.weight[:n_tokens].clone().detach()
+            init_prompt_value = self.transformer.wte.weight[:n_tokens].clone().detach()
         else:
             init_prompt_value = torch.FloatTensor(2, 10).uniform_(
                 -random_range, random_range
             )
-        self.soft_prompt = nn.Embedding(n_tokens, self.config.word_embed_proj_dim)
+        self.soft_prompt = nn.Embedding(n_tokens, self.config.hidden_size)
         # Initialize weight
         self.soft_prompt.weight = nn.parameter.Parameter(init_prompt_value)
 
 
     def _cat_learned_embedding_to_input(self, input_ids) -> torch.Tensor:
-        inputs_embeds = self.model.decoder.embed_tokens(input_ids)
+        inputs_embeds = self.transformer.wte(input_ids)
 
         if len(list(inputs_embeds.shape)) == 2:
             inputs_embeds = inputs_embeds.unsqueeze(0)
@@ -92,7 +91,7 @@ class GPTPromptTuningMixin:
         n_batches = labels.shape[0]
         return torch.cat(
             [
-                torch.full((n_batches, self.n_tokens), ignore_index).to(self.device),
+                torch.full((n_batches, self.n_tokens), ignore_index, device=labels.device),
                 labels,
             ],
             dim=1,
@@ -106,7 +105,7 @@ class GPTPromptTuningMixin:
 
         n_batches = attention_mask.shape[0]
         return torch.cat(
-            [torch.full((n_batches, self.n_tokens), 1).to(self.device), attention_mask],
+            [torch.full((n_batches, self.n_tokens), 1), attention_mask],
             dim=1,
         )
 
@@ -118,7 +117,7 @@ class GPTPromptTuningMixin:
 
 
     def save_model(self, path: str):
-        self.model.save_pretrained(path)
+        self.transformer.save_pretrained(path)
 
 
     def forward(
@@ -139,15 +138,13 @@ class GPTPromptTuningMixin:
         return_dict=None,
     ):
         if input_ids is not None:
-            inputs_embeds = self._cat_learned_embedding_to_input(input_ids).to(
-                self.device
-            )
+            inputs_embeds = self._cat_learned_embedding_to_input(input_ids)
 
         if labels is not None:
-            labels = self._extend_labels(labels).to(self.device)
+            labels = self._extend_labels(labels)
 
         if attention_mask is not None:
-            attention_mask = self._extend_attention_mask(attention_mask).to(self.device)
+            attention_mask = self._extend_attention_mask(attention_mask)
 
         # Drop most of the args for now
         return super().forward(
@@ -164,6 +161,8 @@ class GPTPromptTuningMixin:
 # Its `forward` method accepts the same arguments as other
 # models' "-ForCausalLM" classes' `forward` methods do.
 class GPTPromptTuningLM(GPTPromptTuningMixin, GPT2LMHeadModel):
+    # Is this constructor even called if this class is always
+    # instantiated with its inherited `from_pretrained` method?
     def __init__(self, config):
         super().__init__(config)
         self.model = self.transformer

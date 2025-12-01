@@ -16,3 +16,8 @@ tests
 visualization
 requirement.txt
 evaluate_llama_for_mot.py
+.huggingface_cache
+.mypy_cache
+.venv
+.vscode
+.DS_Store
