@@ -1,6 +1,6 @@
 model=MiniLLM/teacher-gpt2-1.5B # Model from which to instantiate tokenizer
 
-for dataset in c4; do # also repeat for wikitext2 and ptb
+for dataset in wikitext2 ptb c4; do
 
 # Evaluate prompt-aided distills
 model_name_or_path=MiniLLM/MiniLLM-gpt2-120M
