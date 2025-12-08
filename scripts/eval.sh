@@ -17,6 +17,7 @@ python evaluate.py \
     --model ${model} \
     --model_name_or_path ${model_name_or_path} \
     --ckpt ${ckpt} \
+    --dataset ${dataset} \
     --ntoken ${soft_token_num} \
     --llm_cache_dir ./.huggingface_cache/llm/ \
     --dataset_cache_dir ./.huggingface_cache/dataset/ \
@@ -36,6 +37,7 @@ touch $LOG_FILE_NAME && \
 python evaluate.py \
     --model ${model} \
     --model_name_or_path ${model_name_or_path} \
+    --dataset ${dataset} \
     --llm_cache_dir ./.huggingface_cache/llm/ \
     --dataset_cache_dir ./.huggingface_cache/dataset/ \
     2>&1 | tee $LOG_FILE_NAME
