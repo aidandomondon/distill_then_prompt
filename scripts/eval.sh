@@ -29,7 +29,19 @@ done
 done
 done
 
-# Evaluate unprompted teacher model as well
+# Evaluate unprompted student and unprompted teacher as well
+model_name_or_path=MiniLLM/MiniLLM-gpt2-120M
+echo "Evaluating ${model_name_or_path} student model with no prompt."
+LOG_FILE_NAME=./logs/evaluation/unprompted_student_dataset${dataset}.txt
+touch $LOG_FILE_NAME && \
+python evaluate.py \
+    --model ${model} \
+    --model_name_or_path ${model_name_or_path} \
+    --dataset ${dataset} \
+    --llm_cache_dir ./.huggingface_cache/llm/ \
+    --dataset_cache_dir ./.huggingface_cache/dataset/ \
+    2>&1 | tee $LOG_FILE_NAME
+
 model_name_or_path=MiniLLM/teacher-gpt2-1.5B
 echo "Evaluating ${model_name_or_path} teacher model with no prompt."
 LOG_FILE_NAME=./logs/evaluation/unprompted_teacher_dataset${dataset}.txt
