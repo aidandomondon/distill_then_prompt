@@ -10,7 +10,6 @@ llama_case_study
 case_study
 *.npy
 *.pdf
-scripts
 tests
 visualization
 requirement.txt
