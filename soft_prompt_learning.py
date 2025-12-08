@@ -175,7 +175,7 @@ if __name__ == "__main__":
                                                           n_tokens=args.soft_token_num,
                                                           initialize_from_vocab=args.init_from_vocab,
                                                           dtype=torch.float32,
-                                                          device_map='mps',
+                                                          device_map=torch.accelerator.current_accelerator().type,
                                                           cache_dir=args.llm_cache_dir,
                                                           local_files_only=local_files_only,
                                                           )

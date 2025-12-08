@@ -7,11 +7,11 @@ soft_token_num=25
 
 for opt in adamw; do
 for lr in 0.001; do
-for steps in 300; do
+for steps in 1000; do
 # original num steps = 30000 induces 5 hrs training time on 4 48GB GPUs.
 # trying num_steps = 300 for 1.2 hr training on 1 8GB GPU.
 
-LOG_FILE_NAME=./logs/log_kd_${opt}_lr${lr}_${dataset}_steps${steps}_token${soft_token_num}.txt
+LOG_FILE_NAME=./logs/prompt_generation/log_kd_${opt}_lr${lr}_${dataset}_steps${steps}_token${soft_token_num}.txt
 touch $LOG_FILE_NAME && \
 python soft_prompt_learning.py \
     --model_name_or_path ${model_name_or_path} \
