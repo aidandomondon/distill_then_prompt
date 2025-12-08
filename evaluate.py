@@ -1,7 +1,7 @@
 import argparse
 import os
 import ipdb
-from transformers import AutoTokenizer, LlamaForCausalLM, OPTForCausalLM, GPT2Tokenizer
+from transformers import AutoTokenizer, LlamaForCausalLM, OPTForCausalLM, GPT2Tokenizer, GPT2LMHeadModel
 from datasets import load_dataset 
 import torch
 import torch.nn as nn
@@ -48,14 +48,11 @@ def evaluate(prompt_model, valenc, loss_fct, seqlen):
     for i in range(n_samples):
         inputs_ids = valenc[:,i*seqlen:(i+1)*seqlen].to(current_accelerator().type)
         labels = prepare_input_and_label(prompt_model, inputs_ids)
-        try:
-            # if isinstance(prompt_model, LLamaPromptTuningLM):
-            #     output = prompt_model.forward_with_soft_prompt(inputs_ids)
-            # else:
-            #     output = prompt_model(inputs_ids)
-            output = prompt_model(inputs_ids)
-        except:
-            import ipdb; ipdb.set_trace()
+        # if isinstance(prompt_model, LLamaPromptTuningLM):
+        #     output = prompt_model.forward_with_soft_prompt(inputs_ids)
+        # else:
+        #     output = prompt_model(inputs_ids)
+        output = prompt_model(inputs_ids)
         shift_logits = output.logits[:, :-1, :]
         loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), labels.view(-1))
         neg_log_likelihood = loss.float().mean() * seqlen
@@ -108,7 +105,7 @@ elif 'gpt' in args.model.lower():
     else:   
         # Otherwise, this is a model with no accompanying soft prompt 
         # (likely an uncompressed model)
-        model = GPTPromptTuningLM.from_pretrained(
+        model = GPT2LMHeadModel.from_pretrained(
             args.model_name_or_path,
             dtype=torch.float32,
             device_map=current_accelerator().type,
