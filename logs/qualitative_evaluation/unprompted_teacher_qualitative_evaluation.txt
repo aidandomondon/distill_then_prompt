@@ -1,0 +1,28 @@
+2025-12-11 09:28:50.419309: I tensorflow/core/util/port.cc:153] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-12-11 09:28:50.437013: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:467] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+E0000 00:00:1765445330.458580    3009 cuda_dnn.cc:8579] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+E0000 00:00:1765445330.465192    3009 cuda_blas.cc:1407] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+W0000 00:00:1765445330.481639    3009 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1765445330.481663    3009 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1765445330.481665    3009 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+W0000 00:00:1765445330.481667    3009 computation_placer.cc:177] computation placer already registered. Please check linkage and avoid linking the same target more than once.
+2025-12-11 09:28:50.486465: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX512F AVX512_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:19<00:19, 19.46s/it]Fetching 2 files: 100%|██████████| 2/2 [00:19<00:00,  9.73s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.55s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.16it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.04it/s]
+torch.float32
+ckpt: None
+model_name_or_path: MiniLLM/teacher-gpt2-1.5B
+
+Responses:
+
+Query: Please give answers to this question: Where is Long Beach?
+Response:  Long Beach is located in Los Angeles County, California.
+
+Query: Please give answers to this question: Where is Tulsa, Oklahoma?
+Response:   It is a city in the northeast corner of Oklahoma.  It is home to a large population of immigrants from all over the world.  Many of the best restaurants in Tulsa are also immigrants from Asia, Africa and the Middle East.  Tulsa
+
+Query: Please give answers to this question: What is Asparagus?
+Response:  Asparagus is a cruciferous vegetable that grows underground in the soil. It has a sweet, savory, and bitter taste.
+
