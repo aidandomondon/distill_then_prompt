@@ -16,7 +16,7 @@ for soft_token_num in 25; do
 for ckpt in ./generated_prompts/${opt}_lr${lr}_steps${steps}_token${soft_token_num}/${prompt_tuning_dataset}/best.pth; do
 
 echo "Evaluating ${model_name_or_path} model with ${soft_token_num}-token prompt from ${ckpt} generated with ${steps} steps, ${lr} learning rate, and ${opt} optimizer."
-LOG_FILE_NAME=./logs/evaluation/kd_${opt}_lr${lr}_${dataset}_steps${steps}_token${soft_token_num}_dataset${dataset}.txt
+LOG_FILE_NAME=./logs/evaluation/kd_${opt}_lr${lr}_${prompt_tuning_dataset}_steps${steps}_token${soft_token_num}_dataset${dataset}.txt
 touch $LOG_FILE_NAME && \
 python evaluate.py \
     --model ${model} \
