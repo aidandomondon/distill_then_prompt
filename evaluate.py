@@ -9,6 +9,7 @@ from torch.accelerator import current_accelerator
 from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, GPTPromptTuningLM
 from transformers.models import llama as llama_loader
 from prompt.modelutils import get_llama
+from tqdm import tqdm
 
 
 parser = argparse.ArgumentParser(description='PyTorch')
@@ -45,7 +46,7 @@ def evaluate(prompt_model, valenc, loss_fct, seqlen):
     if not isinstance(valenc, torch.Tensor):
         valenc = valenc.input_ids
     n_samples = valenc.size(1) // seqlen
-    for i in range(n_samples):
+    for i in tqdm(range(n_samples), desc='Evaluation', unit='Samples'):
         inputs_ids = valenc[:,i*seqlen:(i+1)*seqlen].to(current_accelerator().type)
         labels = prepare_input_and_label(prompt_model, inputs_ids)
         # if isinstance(prompt_model, LLamaPromptTuningLM):
