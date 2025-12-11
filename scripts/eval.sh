@@ -1,7 +1,11 @@
 model=MiniLLM/teacher-gpt2-1.5B # Model from which to instantiate tokenizer
 prompt_tuning_dataset=c4 # Dataset used to train prompts
+datasets=(wikitext2 ptb c4) # Datasets to evaluate on
+# WARNING: c4 only has train and validation splits, no test split.
+# validation split is used here. Warning: validation split used in
+# training process for the purpose of selecting the best soft prompts candidates.
 
-for dataset in wikitext2 ptb c4; do
+for dataset in $datasets; do
 
 # Evaluate prompt-aided distills
 model_name_or_path=MiniLLM/MiniLLM-gpt2-120M
