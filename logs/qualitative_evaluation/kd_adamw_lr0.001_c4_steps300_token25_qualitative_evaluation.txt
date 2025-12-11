@@ -1,0 +1,21 @@
+Initializing soft prompt...
+torch.float32
+ckpt: ./generated_prompts/adamw_lr0.001_steps300_token25/c4/best.pth
+model_name_or_path: MiniLLM/MiniLLM-gpt2-120M
+
+Responses:
+
+Query: Please give answers to this question: Where is Long Beach?
+Response:   Long Beach is in the San Francisco Bay Area of California.  It is located in the middle of the San Francisco Bay Area of California.  It is a very popular destination for tourists and locals alike.  Long Beach is also a very popular
+
+Query: Please give answers to this question: Where is Tulsa, Oklahoma?
+Response:  
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in
+
+Query: Please give answers to this question: What is Asparagus?
+Response:  It is a type of fruit. It is grown in the Mediterranean. It is very nutritious. It is also very tasty. It is a very popular dish.
+

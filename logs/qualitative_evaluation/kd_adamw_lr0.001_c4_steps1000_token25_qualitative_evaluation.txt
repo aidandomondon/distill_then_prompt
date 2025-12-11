@@ -1,0 +1,21 @@
+Initializing soft prompt...
+torch.float32
+ckpt: ./generated_prompts/adamw_lr0.001_steps1000_token25/c4/best.pth
+model_name_or_path: MiniLLM/MiniLLM-gpt2-120M
+
+Responses:
+
+Query: Please give answers to this question: Where is Long Beach?
+Response:  Long Beach is in the Pacific Ocean, about 30 minutes south of San Francisco. It is a very popular beach destination for tourists and locals alike. The beach is very popular for both recreational and fun activities. The beach is also very popular for people who
+
+Query: Please give answers to this question: Where is Tulsa, Oklahoma?
+Response:  
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in Oklahoma City, Oklahoma. 
+The answer is in
+
+Query: Please give answers to this question: What is Asparagus?
+Response:  And what is the name of the plant? It is a genus of plants.
+
