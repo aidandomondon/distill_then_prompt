@@ -1,0 +1,20 @@
+The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+torch.float32
+ckpt: None
+model_name_or_path: MiniLLM/MiniLLM-gpt2-120M
+
+Responses:
+
+Query: Please give answers to this question: Where is Long Beach?
+Response:  Long Beach is a city in California that is located in the San Francisco Bay Area.
+
+Query: Please give answers to this question: Where is Tulsa, Oklahoma?
+Response: 
+
+Tulsa is located in the northeast corner of the United States of America. It is also the home of the University of Oklahoma and the University of Oklahoma City.
+
+Query: Please give answers to this question: What is Asparagus?
+Response: 
+
+Asparagus is a versatile vegetable that can be used in many dishes. It is also a versatile dish that can be cooked in a variety of ways. For example, it can be used in salads, as a dressing in pasta, or
+

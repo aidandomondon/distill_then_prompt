@@ -1,0 +1,8 @@
+Initializing soft prompt...
+torch.float32
+dataset wikitext2
+ckpt: ./prompts/adamw_lr0.001_steps300_token25/c4/best.pth
+model_name_or_path: MiniLLM/MiniLLM-gpt2-120M
+
+eval Perplexity: 34.992401123046875
+test Perplexity: 33.812034606933594

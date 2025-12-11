@@ -1,21 +1,15 @@
 from tqdm import tqdm
-from itertools import chain
 import torch
 import argparse
-import numpy as np
 
 import time
-import torch.nn.functional as F
 import os
 from collections.abc import Mapping
-from transformers import AutoTokenizer, set_seed, default_data_collator
+from transformers import AutoTokenizer, set_seed, GPT2Tokenizer
 from datasets import load_dataset
 from typing import Any, Union
-from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, TextDataset
+from prompt import LLamaPromptTuningLM, OPTPromptTuningLM, TextDataset, GPTPromptTuningLM
 from transformers.models import llama as llama_loader
-from datasets import Dataset
-from accelerate import Accelerator
-# from optimum.bettertransformer import BetterTransformer
 
 
 parser = argparse.ArgumentParser("")
@@ -39,6 +33,8 @@ parser.add_argument("--seqlen", type=int, default=1024)
 parser.add_argument("--per_device_train_batch_size", type=int, default=4)
 parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
 parser.add_argument("--num_epochs", type=str, default=1000000)
+parser.add_argument("--llm_cache_dir", type=str)
+parser.add_argument("--dataset_cache_dir", type=str)
 
 
 def freeze_model(model):
@@ -68,7 +64,7 @@ def prepare_input(data: Union[torch.Tensor, Any]) -> Union[torch.Tensor, Any]:
     elif isinstance(data, (tuple, list)):
         return type(data)(prepare_input(v) for v in data)
     elif isinstance(data, torch.Tensor):
-        kwargs = dict(device='cuda')
+        kwargs = dict(device=torch.accelerator.current_accelerator().type)
         return data.to(**kwargs)
     return data
 
@@ -100,8 +96,7 @@ def evaluate(prompt_model, val_loader, loss_fct, is_llama=True):
     nlls = []
     total_samples = 0
     for idx, inputs_ids in tqdm(enumerate(val_loader)):
-        if torch.cuda.device_count() == 1:
-            inputs_ids = inputs_ids.cuda()
+        inputs_ids = inputs_ids.to(torch.accelerator.current_accelerator())
         bs ,seqlen = inputs_ids.shape
         total_samples += bs
         labels = prepare_input_and_label(prompt_model, inputs_ids)
@@ -109,10 +104,7 @@ def evaluate(prompt_model, val_loader, loss_fct, is_llama=True):
         shift_logits = output.logits[:, :-1, :]
         loss = loss_fct(shift_logits.reshape(-1, shift_logits.shape[-1]), labels.view(-1))
         neg_log_likelihood = loss.float().reshape(bs, -1).mean(dim=-1) * seqlen
-        if torch.cuda.device_count() > 1:
-            nll = accelerator.gather(neg_log_likelihood.view(1, -1))
-        else:
-            nll = neg_log_likelihood.view(1, -1)
+        nll = neg_log_likelihood.view(1, -1)
         nlls.append(nll)
     nlls = torch.hstack(nlls).view(-1)
     ppl = torch.exp(nlls.sum() / (nlls.numel() * seqlen))
@@ -166,6 +158,31 @@ if __name__ == "__main__":
         print(prompt_model.soft_prompt)
         tokenizer = llama_loader.LlamaTokenizer.from_pretrained(args.model, use_fast=False)
         IS_LLAMA = True
+    elif args.model.lower().find('gpt2') != -1:
+
+        if len(os.listdir(args.llm_cache_dir)) > 0:
+            local_files_only = True
+        else:
+            fetch_remote = input("Local files dir empty. Attempt to download? [Y/n]")
+            if fetch_remote == 'Y':
+                local_files_only = False
+            else:
+                print('Aborting.')
+                exit()
+
+        prompt_model = GPTPromptTuningLM.from_pretrained(args.model_name_or_path,
+                                                          soft_prompt_path=None,
+                                                          n_tokens=args.soft_token_num,
+                                                          initialize_from_vocab=args.init_from_vocab,
+                                                          dtype=torch.float32,
+                                                          device_map=torch.accelerator.current_accelerator().type,
+                                                          cache_dir=args.llm_cache_dir,
+                                                          local_files_only=local_files_only,
+                                                          )
+        prompt_model = freeze_model(prompt_model)
+        print(prompt_model.soft_prompt)
+        tokenizer = GPT2Tokenizer.from_pretrained(args.model, use_fast=False, local_files_only=local_files_only, cache_dir=args.llm_cache_dir)
+        IS_LLAMA = False
     else:
         raise NotImplementedError("currently only support OPT")
 
@@ -195,9 +212,11 @@ if __name__ == "__main__":
     elif args.dataset == 'c4':
         raw_tra_data = load_dataset('allenai/c4',
                                     data_files={'train': 'en/c4-train.00000-of-01024.json.gz'}, 
+                                    cache_dir=args.dataset_cache_dir,
                                     split='train')
         raw_val_data = load_dataset('allenai/c4',
-                                    data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'}, 
+                                    data_files={'validation': 'en/c4-validation.00000-of-00008.json.gz'},
+                                    cache_dir=args.dataset_cache_dir,
                                     split='validation')
         train_dataset = TextDataset(raw_tra_data, tokenizer, args, mode="train", col_key='text', cutoff=5000)
         val_dataset = TextDataset(raw_val_data, tokenizer, args, mode="val", col_key='text', cutoff=1100)
@@ -253,15 +272,7 @@ if __name__ == "__main__":
 
     pbar = tqdm(total=tot_step, desc="Train")
     loss_fct = torch.nn.CrossEntropyLoss(reduction='none')
-    if torch.cuda.device_count() > 1:
-        accelerator = Accelerator()
-        prompt_model, optimizer, train_dataloader, scheduler = accelerator.prepare(
-            prompt_model, optimizer, train_dataloader, scheduler)
-        device = accelerator.device
-        val_dataloader = accelerator.prepare(val_dataloader)
-    else:
-        device = "cuda"
-    prompt_model = prompt_model.to(device)
+    prompt_model = prompt_model.to(torch.accelerator.current_accelerator())
     # prompt_model = BetterTransformer.transform(model)
 
     # val_ppl = evaluate(prompt_model, val_dataloader, loss_fct)
@@ -271,17 +282,11 @@ if __name__ == "__main__":
         print(f"Begin epoch {epoch}")
         prompt_model.train()
         for step, batch in enumerate(train_dataloader):
-            if torch.cuda.device_count() > 1:
-                input_ids = batch
-            else:
-                input_ids = batch.cuda()
+            input_ids = batch.to(torch.accelerator.current_accelerator())
             output = prompt_model(input_ids)
             logits = output.logits
             loss = loss_func(logits, input_ids, prompt_model, loss_fct)
-            if torch.cuda.device_count() > 1:
-                accelerator.backward(loss)
-            else:
-                loss.backward()
+            loss.backward()
             tot_loss += loss.item()
             actual_step += 1
             
@@ -307,12 +312,6 @@ if __name__ == "__main__":
                 val_ppl = evaluate(prompt_model, val_dataloader, loss_fct, IS_LLAMA)
                 print(f'{val_ppl}: val_ppl')
                 if val_ppl <= best_val_ppl:
-                    if isinstance(prompt_model, torch.nn.parallel.DistributedDataParallel):
-                        unwrapped_model = accelerator.unwrap_model(prompt_model)
-                        accelerator.save({
-                            "model": unwrapped_model.soft_prompt.state_dict(),
-                            "optimizer": optimizer.optimizer.state_dict() # optimizer is an AcceleratedOptimizer object
-                        }, f"{ROOT}/{args.output_dir}/best.pth")
                     torch.save({"model": prompt_model.soft_prompt.state_dict(), 
                                 "optimizer": optimizer.state_dict(),
                                 },f"{ROOT}/{args.output_dir}/best.pth")

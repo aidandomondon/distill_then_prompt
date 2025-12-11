@@ -1,0 +1,7 @@
+torch.float32
+dataset wikitext2
+ckpt: None
+model_name_or_path: MiniLLM/MiniLLM-gpt2-120M
+
+eval Perplexity: 37.8135871887207
+test Perplexity: 36.545249938964844
